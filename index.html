@@ -5,9 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Fighting Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        #wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        #ui-wrapper {
+            display: flex;
+            position:absolute;
+            width: 100%;
+            align-items: center;
+            padding: 20px;
+        }
+        .healthbar {
+            height: 30px;
+            width: 100%;
+            background-color: yellow;
+        }
+        #timer {
+            height: 60px;
+            width: 60px;
+            background-color: red;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #game-end-overlay {
+            position: absolute;
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+    </style>
 </head>
 <body>
-    <canvas></canvas>
+    <div id="wrapper">
+        <div id="ui-wrapper">
+            <progress id="player-hp" class="healthbar"></progress>
+            <div id="timer"></div>
+            <progress id="enemy-hp" class="healthbar"></progress>
+        </div>
+        <canvas></canvas>
+        <div id="game-end-overlay"></div>
+    </div>
+    <script src="js/utils.js"></script>
+    <script src="js/classes.js"></script>
     <script src="js/index.js"></script>
 </body>
 </html>

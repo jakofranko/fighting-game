@@ -1,12 +1,17 @@
+import { Sprite, Fighter } from './classes';
+import { determineWinner, attackRectangleCollision } from './utils';
+import { CANVAS_WIDTH, CANVAS_HEIGHT, FLOOR_HEIGHT } from './constants';
+
 const canvas = document.querySelector('canvas');
 const c = canvas.getContext('2d');
 
-canvas.width = 1024;
-canvas.height = 576;
+canvas.width = CANVAS_WIDTH;
+canvas.height = CANVAS_HEIGHT;
 
-const floorHeight = 72;
+const floorHeight = FLOOR_HEIGHT;
 
 const background = new Sprite({
+    ctx: c,
     position: {
         x: 0,
         y: -375
@@ -19,6 +24,7 @@ const background = new Sprite({
 });
 
 const player = new Fighter({
+    ctx: c,
     position: {
         x: 200,
         y: 0
@@ -32,8 +38,8 @@ const player = new Fighter({
         y: 1.5
     },
     offset: {
-        x: 0,
-        y: 15
+        x: -5,
+        y: -5
     },
     imageSrc: './assets/characters/Char_3_trimmed.png',
     sprites: {
@@ -56,15 +62,32 @@ const player = new Fighter({
             row: 0,
             framesStart: 7,
             framesEnd: 2
+        },
+        punch1: {
+            row: 2,
+            framesStart: 0,
+            framesEnd: 4
+        },
+        takeHit: {
+            row: 3,
+            framesStart: 3,
+            framesEnd: 3
         }
     },
+    noInterruptSprites: ['punch1', 'takeHit'],
     rowCurrent: 0,
     framesMax: 18,
-    framesHold: 20,
+    framesHold: 10,
     framesRows: 7,
-    attack1BoxOffset: {
-        x: 0,
-        y: 0
+    attackBox: {
+        offset: {
+            x: 50,
+            y: 30
+        },
+        width: 30,
+        height: 20,
+        totalFrames: 4,
+        hitFrames: [0, 2]
     }
 });
 
@@ -73,6 +96,7 @@ playerHealthBar.max = player.health;
 playerHealthBar.value = player.health;
 
 const enemy = new Fighter({
+    ctx: c,
     position: {
         x: 600,
         y: 0
@@ -86,8 +110,8 @@ const enemy = new Fighter({
         y: 1.5
     },
     offset: {
-        x: 0,
-        y: 15
+        x: -5,
+        y: -5
     },
     imageSrc: './assets/characters/Char_4_trimmed.png',
     sprites: {
@@ -110,15 +134,32 @@ const enemy = new Fighter({
             row: 0,
             framesStart: 7,
             framesEnd: 2
+        },
+        punch1: {
+            row: 2,
+            framesStart: 0,
+            framesEnd: 4
+        },
+        takeHit: {
+            row: 3,
+            framesStart: 3,
+            framesEnd: 2
         }
     },
+    noInterruptSprites: ['punch1', 'takeHit'],
     rowCurrent: 0,
     framesMax: 18,
-    framesHold: 30,
+    framesHold: 50,
     framesRows: 7,
-    attack1BoxOffset: {
-        x: -50,
-        y: 0
+    attackBox: {
+        offset: {
+            x: 0,
+            y: 0
+        },
+        width: 50,
+        height: 30,
+        totalFrames: 4,
+        hitFrames: [0, 2]
     }
 });
 
@@ -283,15 +324,21 @@ function animationLoop() {
     }
 
     // Collision detection
-    if (attackRectangleCollision(player, enemy) && player.isAttacking) {
+    if (player.isAttacking &&
+        player.attackBox.hitFrames.includes(player.framesCurrent) &&
+        attackRectangleCollision(player, enemy)
+    ) {
         console.log('player attack');
-        enemy.health -= player.attack1Damage;
+        enemy.takeHit(player.attack1Damage);
         enemyHealthBar.value = enemy.health;
     }
 
-    if (attackRectangleCollision(enemy, player) && enemy.isAttacking) {
+    if (enemy.isAttacking &&
+        enemy.attackBox.hitFrames.includes(enemy.framesCurrent) &&
+        attackRectangleCollision(enemy, player)
+    ) {
         console.log('enemy attack')
-        player.health -= enemy.attack1Damage;
+        player.takeHit(enemy.attack1Damage);
         playerHealthBar.value = player.health;
     }
 

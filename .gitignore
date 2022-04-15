@@ -1,2 +1,3 @@
 gimp projects/
 *.xcf
+node_modules/

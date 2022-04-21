@@ -1,4 +1,5 @@
 import phaser from 'phaser';
+import PreloadScene from './scenes/PreloadScene';
 import ForestScene from './scenes/ForestScene';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, FLOOR_HEIGHT } from './constants';
 
@@ -364,10 +365,11 @@ const config = {
 	physics: {
 		default: 'arcade',
 		arcade: {
-			gravity: { y: 200 },
+			gravity: { y: 400 },
+            debug: true
 		}
 	},
-	scene: [ForestScene]
+	scene: [PreloadScene, ForestScene]
 }
 
 export default new Phaser.Game(config);

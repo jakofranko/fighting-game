@@ -7,3 +7,7 @@ export const BACKGROUND_X_OFFSET = -150;
 export const BACKGROUND_SCALE = 1.3;
 export const CHARACTER_HEIGHT = 60;
 export const CHARACTER_WIDTH = 65;
+export const CHARACTER_SCALE = 1.5;
+export const CHARACTER_3 = 'Char3';
+export const CHARACTER_4 = 'Char4';
+export const CHARACTER_5 = 'Char5';

@@ -11,7 +11,11 @@ import {
     CHARACTER_HEIGHT,
     CHARACTER_SCALE,
     CHARACTER_3,
-    CHARACTER_4
+    CHARACTER_3_MOVE_SPEED,
+    CHARACTER_3_JUMP_SPEED,
+    CHARACTER_4,
+    CHARACTER_4_MOVE_SPEED,
+    CHARACTER_4_JUMP_SPEED,
 } from '../constants';
 
 export default class ForestScene extends Phaser.Scene {
@@ -27,9 +31,15 @@ export default class ForestScene extends Phaser.Scene {
     create() {
         this.createBackground();
         this.ground = this.createGround();
+        this.player1 = this.add[CHARACTER_3](100, 150, CHARACTER_3, {
+            moveSpeed: CHARACTER_3_MOVE_SPEED,
+            jumpSpeed: CHARACTER_3_JUMP_SPEED
+        });
+        this.player2 = this.add[CHARACTER_4](500, 150, CHARACTER_4, {
+            moveSpeed: CHARACTER_4_MOVE_SPEED,
+            jumpSpeed: CHARACTER_4_JUMP_SPEED
+        });
         this.createForeground();
-        this.player1 = this.add[CHARACTER_3](100, 150, CHARACTER_3);
-        this.player2 = this.add[CHARACTER_4](500, 150, CHARACTER_4);
 
         // Register animations
         createCharacterAnims(this.anims);
@@ -40,6 +50,13 @@ export default class ForestScene extends Phaser.Scene {
 
         // Add cursors
         this.player1Controls = this.input.keyboard.createCursorKeys();
+        this.player2Controls = {
+            up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+            left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+            down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+            right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
+            space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F),
+        }
     }
 
     createBackground() {
@@ -67,7 +84,7 @@ export default class ForestScene extends Phaser.Scene {
 
     update() {
         this.player1.update(this.player1Controls);
-        // this.player2.update(this.player2Controls);
+        this.player2.update(this.player2Controls);
 
         if (this.player1.x > this.player2.x) {
             this.player1.flipX = true;

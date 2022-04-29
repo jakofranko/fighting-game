@@ -29,6 +29,9 @@ export default class ForestScene extends Phaser.Scene {
     }
 
     create() {
+        // Run the UI
+        this.scene.run('ui');
+        
         this.createBackground();
         this.ground = this.createGround();
         this.player1 = this.add[CHARACTER_3](100, 150, CHARACTER_3, {

@@ -1,6 +1,7 @@
 import phaser from 'phaser';
 import PreloadScene from './scenes/PreloadScene';
 import ForestScene from './scenes/ForestScene';
+import UIScene from './scenes/UIScene';
 import { CANVAS_WIDTH, CANVAS_HEIGHT, FLOOR_HEIGHT } from './constants';
 
 const config = {
@@ -14,7 +15,7 @@ const config = {
             debug: true
 		}
 	},
-	scene: [PreloadScene, ForestScene]
+	scene: [PreloadScene, ForestScene, UIScene]
 }
 
 export default new Phaser.Game(config);

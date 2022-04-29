@@ -57,6 +57,10 @@ export default class ForestScene extends Phaser.Scene {
             right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
             space: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F),
         }
+
+        // Make each player object aware of the other
+        this.player1.enemyPlayer = this.player2;
+        this.player2.enemyPlayer = this.player1;
     }
 
     createBackground() {

@@ -10,23 +10,48 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.animationIsPlaying = false;
         this.lastAnimation = null;
         this.overrideAnimations = [`${this.name}_low_kick`];
+        this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
         this.jumpSpeed = config.jumpSpeed;
-        this.enemyPlayer = config.enemyPlayer;
+        this.enemyPlayer = undefined; // Will be set in Scene
         this.isFlipped = false;
 
-        this.stateMachine = new StateMachine(this);
-        this.stateMachine
+        this.hMovementStateMachine = new StateMachine(this);
+        this.hMovementStateMachine
             .addState('idle', {
                 onEnter: () => {
                     this.setVelocityX(0);
+                }
+            })
+            .addState('moveLeft', {
+                onEnter: () => {
+                    this.setVelocityX(-this.moveSpeed)
+                }
+            })
+            .addState('moveRight', {
+                onEnter: () => {
+                    this.setVelocityX(this.moveSpeed)
+                }
+            });
+        this.vMovementStateMachine = new StateMachine(this);
+        this.vMovementStateMachine
+            .addState('jump', {
+                onEnter: () => {
+                    this.setVelocityY(-this.jumpSpeed);
+                }
+            })
+            .addState('idle');
+        // For animations and physics
+        this.actionStateMachine = new StateMachine(this);
+        this.actionStateMachine
+            .addState('idle', {
+                onEnter: () => {
                     this.animationIsPlaying = false;
                     this.anims.play(`${this.name}_idle`);
                 }
             })
             .addState('moveLeft', {
                 onEnter: () => {
-                    this.setVelocityX(-this.moveSpeed)
                     this.flipX
                         ? this.startAnimation(`${this.name}_forward`)
                         : this.startAnimation(`${this.name}_back`);
@@ -38,14 +63,10 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                             ? this.startAnimation(`${this.name}_forward`)
                             : this.startAnimation(`${this.name}_back`);
                     }
-                },
-                onExit: () => {
-                    this.setVelocityX(0);
                 }
             })
             .addState('moveRight', {
                 onEnter: () => {
-                    this.setVelocityX(this.moveSpeed)
                     this.flipX
                         ? this.startAnimation(`${this.name}_back`)
                         : this.startAnimation(`${this.name}_forward`);
@@ -57,14 +78,10 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                             ? this.startAnimation(`${this.name}_back`)
                             : this.startAnimation(`${this.name}_forward`);
                     }
-                },
-                onExit: () => {
-                    this.setVelocityX(0);
                 }
             })
             .addState('jump', {
                 onEnter: () => {
-                    this.setVelocityY(-this.jumpSpeed);
                     this.anims.play(`${this.name}_jump`);
                 }
             })
@@ -72,6 +89,14 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 onEnter: this.onLowKickEnter,
                 onExit: this.onLowKickExit
             })
+            .addState('damage', {
+                onEnter: ({ damage }) => {
+                    this.health -= damage;
+                    console.log(`${this.health} remaining`)
+                    // TODO: add hit animation
+                    // TODO: add logic and animation for blocking
+                }
+            });
     }
 
     update(controls) {
@@ -83,30 +108,71 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             space
         } = controls;
 
-        if (left.timeDown > right.timeDown && left.isDown) {
-            this.stateMachine.setState('moveLeft');
-        } else if (right.timeDown > left.timeDown && right.isDown) {
-            this.stateMachine.setState('moveRight');
-        }
-
-        if (space.isDown) {
-            this.stateMachine.setState('lowKick');
-        }
+        this.handleHMovement(controls);
+        this.handleVMovement(controls);
+        this.handleActions(controls);
 
         if (
             left.isUp &&
             right.isUp &&
-            up.isUp &&
             space.isUp
         ) {
-            this.stateMachine.setState('idle');
+            this.hMovementStateMachine.setState('idle');
+            this.actionStateMachine.setState('idle');
         }
+
+        this.hMovementStateMachine.update();
+        this.vMovementStateMachine.update();
+        this.actionStateMachine.update();
+    }
+
+    handleHMovement(controls) {
+        const {
+            left,
+            right,
+            up,
+            down,
+            space
+        } = controls;
+
+        if (right.isUp && left.isDown) {
+            this.hMovementStateMachine.setState('moveLeft');
+        } else if (left.isUp && right.isDown) {
+            this.hMovementStateMachine.setState('moveRight');
+        } else if (left.isDown && right.isDown) {
+            this.hMovementStateMachine.setState('idle');
+        } else if (left.isUp && right.isUp) {
+            this.hMovementStateMachine.setState('idle');
+        }
+    }
+
+    handleVMovement(controls) {
+        const { up } = controls;
 
         if (up.isDown && this.body.touching.down) {
-            this.stateMachine.setState('jump');
+            this.vMovementStateMachine.setState('jump');
         }
 
-        this.stateMachine.update();
+        if (up.isUp) {
+            this.vMovementStateMachine.setState('idle');
+        }
+    }
+
+    handleActions(controls) {
+        const { up, left, right, space } = controls;
+
+        // Handle attacks first
+        if (space.isDown) {
+            this.actionStateMachine.setState('lowKick');
+        } else if (up.isDown && this.body.touching.down) {
+            this.actionStateMachine.setState('jump');
+        } else if (right.isUp && left.isDown) {
+            this.actionStateMachine.setState('moveLeft');
+        } else if (left.isUp && right.isDown) {
+            this.actionStateMachine.setState('moveRight');
+        } else if (left.isDown && right.isDown) {
+            this.actionStateMachine.setState('idle');
+        }
     }
 
     unsetAnimation() {
@@ -121,7 +187,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.lastAnimation !== anim ||
             this.animationIsPlaying === false
         ) {
-            console.log(anim)
             this.animationIsPlaying = true;
             this.anims.play(anim, true);
             this.lastAnimation = anim;
@@ -139,21 +204,41 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0.4);
         this.scene.physics.add.existing(this.lowKickHitBox);
         this.lowKickHitBox.body.allowGravity = false;
-        this.scene.physics.add.collider(this.lowKickHitBox, this.enemyPlayer);
+        this.scene.physics.add.overlap(
+            this.lowKickHitBox,
+            this.enemyPlayer,
+            this.handleLowKickHit,
+            undefined,
+            this
+        );
+
+        function addLowKickHitbox(anim, frame) {
+            if (frame.index === 3) {
+                if (this.flipX) {
+                    this.lowKickHitBox.x = this.x - 20;
+                    this.lowKickHitBox.y = this.y + 25;
+                } else {
+                    this.lowKickHitBox.x = this.x + 20 ;
+                    this.lowKickHitBox.y = this.y + 25;
+                }
+            } else if (frame.index === 4) {
+                if (this.lowKickHitBox) this.lowKickHitBox.destroy();
+
+                this.off(Phaser.Animations.Events.ANIMATION_UPDATE, addLowKickHitbox);
+            }
+        }
+
+        this.on(Phaser.Animations.Events.ANIMATION_UPDATE, addLowKickHitbox);
 
         if (this.flipX) {
             this.body.offset.x = 30;
             this.setPosition(this.x - 15, this.y);
-            this.startAnimation(`${this.name}_low_kick`);
-            this.lowKickHitBox.x = this.x - 20;
-            this.lowKickHitBox.y = this.y + 25;
         } else {
             this.body.offset.x = 10;
             this.setPosition(this.x + 15, this.y);
-            this.startAnimation(`${this.name}_low_kick`);
-            this.lowKickHitBox.x = this.x + 20 ;
-            this.lowKickHitBox.y = this.y + 25;
         }
+
+        this.startAnimation(`${this.name}_low_kick`);
     }
 
     onLowKickExit() {
@@ -170,5 +255,10 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 this.lowKickHitBox.destroy();
             }
         }
+    }
+
+    handleLowKickHit(lowKickHitBox, enemyPlayer) {
+        enemyPlayer.actionStateMachine.setState('damage', { damage: 10 });
+        lowKickHitBox.destroy();
     }
 }

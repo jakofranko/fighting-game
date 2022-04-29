@@ -11,9 +11,8 @@ export default class StateMachine {
         this.stateQueue = [];
     }
 
-    addState(stateName, config) {
+    addState(stateName, config = {}) {
         if (this.states[stateName]) {
-            console.log(`${stateName} is already a part of ${this.gameObject.name} state machine.`);
             return;
         }
 
@@ -26,10 +25,9 @@ export default class StateMachine {
         return this;
     }
 
-    setState(stateName) {
+    setState(stateName, stateData) {
 
         if (!this.states[stateName]) {
-            console.warn(`${stateName} does not exist on ${this.gameObject.name}'s state machine'`);
             return;
         }
 
@@ -39,20 +37,18 @@ export default class StateMachine {
 
         // Avoid race conditions when switching states rapidly
         if (this.isSwitchingState) {
-            console.log(`queuing state ${stateName}`)
             this.stateQueue.push(stateName);
             return;
         }
 
         this.isSwitchingState = true;
-        console.log(`Switching to state ${stateName} from ${this.currentState}`)
 
         if (this.currentState && this.states[this.currentState].onExit) {
-            this.states[this.currentState].onExit();
+            this.states[this.currentState].onExit(stateData);
         }
 
         if (this.states[stateName].onEnter) {
-            this.states[stateName].onEnter();
+            this.states[stateName].onEnter(stateData);
         }
 
         this.currentState = stateName;

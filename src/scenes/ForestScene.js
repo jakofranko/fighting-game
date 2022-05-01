@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import EventsCenter from '../services/events-center';
 import Char3 from '../characters/Char3';
 import Char4 from '../characters/Char4';
 import createCharacterAnims from '../anims/characterAnims';
@@ -31,14 +32,16 @@ export default class ForestScene extends Phaser.Scene {
     create() {
         // Run the UI
         this.scene.run('ui');
-        
+
         this.createBackground();
         this.ground = this.createGround();
         this.player1 = this.add[CHARACTER_3](100, 150, CHARACTER_3, {
+            name: 'player1',
             moveSpeed: CHARACTER_3_MOVE_SPEED,
             jumpSpeed: CHARACTER_3_JUMP_SPEED
         });
         this.player2 = this.add[CHARACTER_4](500, 150, CHARACTER_4, {
+            name: 'player2',
             moveSpeed: CHARACTER_4_MOVE_SPEED,
             jumpSpeed: CHARACTER_4_JUMP_SPEED
         });
@@ -64,6 +67,10 @@ export default class ForestScene extends Phaser.Scene {
         // Make each player object aware of the other
         this.player1.enemyPlayer = this.player2;
         this.player2.enemyPlayer = this.player1;
+
+        // Let the UI know about the players
+        // EventsCenter.emit('player-health-update', this.player1);
+        // EventsCenter.emit('player-health-update', this.player2);
     }
 
     createBackground() {

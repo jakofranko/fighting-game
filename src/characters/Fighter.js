@@ -1,15 +1,17 @@
 import Phaser from 'phaser';
 import StateMachine from '../services/state-machine';
+import EventsCenter from '../services/events-center';
 
 export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y, texture, config) {
         super(scene, x, y, texture);
 
         this.scene = scene;
-        this.name = texture;
+        this.name = config.name;
+        this.textureName = texture;
         this.animationIsPlaying = false;
         this.lastAnimation = null;
-        this.overrideAnimations = [`${this.name}_low_kick`];
+        this.overrideAnimations = [`${this.textureName}_low_kick`];
         this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
         this.jumpSpeed = config.jumpSpeed;
@@ -47,42 +49,42 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             .addState('idle', {
                 onEnter: () => {
                     this.animationIsPlaying = false;
-                    this.anims.play(`${this.name}_idle`);
+                    this.anims.play(`${this.textureName}_idle`);
                 }
             })
             .addState('moveLeft', {
                 onEnter: () => {
                     this.flipX
-                        ? this.startAnimation(`${this.name}_forward`)
-                        : this.startAnimation(`${this.name}_back`);
+                        ? this.startAnimation(`${this.textureName}_forward`)
+                        : this.startAnimation(`${this.textureName}_back`);
                 },
                 onUpdate: () => {
                     if (this.flipX !== this.isFlipped) {
                         this.isFlipped = this.flipX;
                         this.flipX
-                            ? this.startAnimation(`${this.name}_forward`)
-                            : this.startAnimation(`${this.name}_back`);
+                            ? this.startAnimation(`${this.textureName}_forward`)
+                            : this.startAnimation(`${this.textureName}_back`);
                     }
                 }
             })
             .addState('moveRight', {
                 onEnter: () => {
                     this.flipX
-                        ? this.startAnimation(`${this.name}_back`)
-                        : this.startAnimation(`${this.name}_forward`);
+                        ? this.startAnimation(`${this.textureName}_back`)
+                        : this.startAnimation(`${this.textureName}_forward`);
                 },
                 onUpdate: () => {
                     if (this.flipX !== this.isFlipped) {
                         this.isFlipped = this.flipX;
                         this.flipX
-                            ? this.startAnimation(`${this.name}_back`)
-                            : this.startAnimation(`${this.name}_forward`);
+                            ? this.startAnimation(`${this.textureName}_back`)
+                            : this.startAnimation(`${this.textureName}_forward`);
                     }
                 }
             })
             .addState('jump', {
                 onEnter: () => {
-                    this.anims.play(`${this.name}_jump`);
+                    this.anims.play(`${this.textureName}_jump`);
                 }
             })
             .addState('lowKick', {
@@ -92,7 +94,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             .addState('damage', {
                 onEnter: ({ damage }) => {
                     this.health -= damage;
-                    console.log(`${this.health} remaining`)
+                    EventsCenter.emit('player-health-update', this);
                     // TODO: add hit animation
                     // TODO: add logic and animation for blocking
                 }
@@ -238,7 +240,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.setPosition(this.x + 15, this.y);
         }
 
-        this.startAnimation(`${this.name}_low_kick`);
+        this.startAnimation(`${this.textureName}_low_kick`);
     }
 
     onLowKickExit() {

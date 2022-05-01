@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH } from '../constants';
+import { capitalizeFirstLetter } from '../utils';
 import EventsCenter from '../services/events-center';
 
 const width = CANVAS_WIDTH / 2.5;
@@ -27,10 +28,13 @@ export default class UIScene extends Phaser.Scene {
     		eventsCenter.off('player-health-update', this.handlePlayerHealthChange, this);
     	});
 
-        this.player1LastHealth = 100;
-        this.player2LastHealth = 100;
-        this.setPlayer1Health(100);
-        this.setPlayer2Health(100);
+        this.player1LastHealth = 0;
+        this.player2LastHealth = 0;
+
+        // Let the rest of the game know that the UI is ready
+        this.events.on('create', () =>{
+            EventsCenter.emit('ui-ready');
+        });
     }
 
     setPlayer1Health(value) {
@@ -40,10 +44,8 @@ export default class UIScene extends Phaser.Scene {
         const percent = Phaser.Math.Clamp(value, 0, 100) / 100;
         this.player1HealthBar.fillStyle(0x808080);
         this.player1HealthBar.fillRoundedRect(x, y, width, height, 5);
-        if (percent > 0) {
-            this.player1HealthBar.fillStyle(0x00ff80);
-            this.player1HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
-        }
+        this.player1HealthBar.fillStyle(0x00ff80);
+        this.player1HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
     }
 
     setPlayer2Health(value) {
@@ -53,49 +55,29 @@ export default class UIScene extends Phaser.Scene {
         const percent = Phaser.Math.Clamp(value, 0, 100) / 100;
         this.player2HealthBar.fillStyle(0x808080);
         this.player2HealthBar.fillRoundedRect(x, y, width, height, 5);
-        if (percent > 0) {
-            this.player2HealthBar.fillStyle(0x00ff80);
-            this.player2HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
-        }
+        this.player2HealthBar.fillStyle(0x00ff80);
+        this.player2HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
     }
 
     handlePlayerHealthChange(player) {
-        if (player.name === 'player1') {
-            this.handlePlayer1HealthChange(player.health);
-        } else if (player.name === 'player2') {
-            this.handlePlayer2HealthChange(player.health);
+        if (player.name === 'player1' || player.name === 'player2') {
+            const capPlayer = capitalizeFirstLetter(player.name);
+            const from = this[`${player.name}LastHealth`];
+
+            this.tweens.addCounter({
+                from,
+                to: player.health,
+                duration: 300,
+                ease: Phaser.Math.Easing.Sine.InOut,
+                onUpdate: (tween) => {
+                    const value = tween.getValue();
+                    this[`set${capPlayer}Health`](value);
+                }
+            });
+
+            this[`${player.name}LastHealth`] = player.health;
         } else {
             console.error(`Please designate which player ${player.name} is by setting the name to either player1 or player2`);
         }
-    }
-
-    handlePlayer1HealthChange(value) {
-        this.tweens.addCounter({
-            from: this.player1LastHealth,
-            to: value,
-            duration: 300,
-            ease: Phaser.Math.Easing.Sine.InOut,
-            onUpdate: (tween) => {
-                const value = tween.getValue();
-                this.setPlayer1Health(value);
-            }
-        });
-
-        this.player1LastHealth = value;
-    }
-
-    handlePlayer2HealthChange(value) {
-        this.tweens.addCounter({
-            from: this.player2LastHealth,
-            to: value,
-            duration: 300,
-            ease: Phaser.Math.Easing.Sine.InOut,
-            onUpdate: (tween) => {
-                const value = tween.getValue();
-                this.setPlayer2Health(value);
-            }
-        });
-
-        this.player2LastHealth = value;
     }
 }

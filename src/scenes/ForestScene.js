@@ -68,9 +68,11 @@ export default class ForestScene extends Phaser.Scene {
         this.player1.enemyPlayer = this.player2;
         this.player2.enemyPlayer = this.player1;
 
-        // Let the UI know about the players
-        // EventsCenter.emit('player-health-update', this.player1);
-        // EventsCenter.emit('player-health-update', this.player2);
+        // Once the UI is ready, let the UI know about the players
+        EventsCenter.once('ui-ready', () => {
+            EventsCenter.emit('player-health-update', this.player1);
+            EventsCenter.emit('player-health-update', this.player2);
+        })
     }
 
     createBackground() {

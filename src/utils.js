@@ -52,3 +52,7 @@ export function determineWinner(player, enemy, timerId) {
         overlay.innerHTML = 'TIE';
     }
 }
+
+export function capitalizeFirstLetter([ first, ...rest ], locale = navigator.language) {
+    return first.toLocaleUpperCase(locale) + rest.join('');
+}

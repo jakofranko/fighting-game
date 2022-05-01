@@ -15,7 +15,7 @@ const config = {
             debug: true
 		}
 	},
-	scene: [PreloadScene, UIScene, ForestScene]
+	scene: [PreloadScene, ForestScene, UIScene]
 }
 
 export default new Phaser.Game(config);

@@ -40,8 +40,10 @@ export default class UIScene extends Phaser.Scene {
         const percent = Phaser.Math.Clamp(value, 0, 100) / 100;
         this.player1HealthBar.fillStyle(0x808080);
         this.player1HealthBar.fillRoundedRect(x, y, width, height, 5);
-        this.player1HealthBar.fillStyle(0x00ff80);
-        this.player1HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
+        if (percent > 0) {
+            this.player1HealthBar.fillStyle(0x00ff80);
+            this.player1HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
+        }
     }
 
     setPlayer2Health(value) {
@@ -51,8 +53,10 @@ export default class UIScene extends Phaser.Scene {
         const percent = Phaser.Math.Clamp(value, 0, 100) / 100;
         this.player2HealthBar.fillStyle(0x808080);
         this.player2HealthBar.fillRoundedRect(x, y, width, height, 5);
-        this.player2HealthBar.fillStyle(0x00ff80);
-        this.player2HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
+        if (percent > 0) {
+            this.player2HealthBar.fillStyle(0x00ff80);
+            this.player2HealthBar.fillRoundedRect(x, y, width * percent, height, 5);
+        }
     }
 
     handlePlayerHealthChange(player) {

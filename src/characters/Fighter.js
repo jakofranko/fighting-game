@@ -84,7 +84,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('jump', {
                 onEnter: () => {
-                    this.anims.play(`${this.textureName}_jump`);
+                    this.startAnimation(`${this.textureName}_jump`);
                 }
             })
             .addState('lowKick', {
@@ -113,15 +113,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.handleHMovement(controls);
         this.handleVMovement(controls);
         this.handleActions(controls);
-
-        if (
-            left.isUp &&
-            right.isUp &&
-            space.isUp
-        ) {
-            this.hMovementStateMachine.setState('idle');
-            this.actionStateMachine.setState('idle');
-        }
 
         this.hMovementStateMachine.update();
         this.vMovementStateMachine.update();
@@ -166,13 +157,15 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         // Handle attacks first
         if (space.isDown) {
             this.actionStateMachine.setState('lowKick');
-        } else if (up.isDown && this.body.touching.down) {
+        } else if (up.isDown) {
             this.actionStateMachine.setState('jump');
         } else if (right.isUp && left.isDown) {
             this.actionStateMachine.setState('moveLeft');
         } else if (left.isUp && right.isDown) {
             this.actionStateMachine.setState('moveRight');
         } else if (left.isDown && right.isDown) {
+            this.actionStateMachine.setState('idle');
+        } else if (left.isUp && right.isUp && up.isUp) {
             this.actionStateMachine.setState('idle');
         }
     }
@@ -184,7 +177,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     startAnimation(anim) {
         const isOverrideAnimation = this.overrideAnimations.includes(this.lastAnimation);
-
+        
         if (!isOverrideAnimation &&
             this.lastAnimation !== anim ||
             this.animationIsPlaying === false

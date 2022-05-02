@@ -72,6 +72,10 @@ export default class ForestScene extends Phaser.Scene {
         EventsCenter.once('ui-ready', () => {
             EventsCenter.emit('player-health-update', this.player1);
             EventsCenter.emit('player-health-update', this.player2);
+        });
+
+        EventsCenter.once('game-over', () => {
+            this.scene.run('game-over');
         })
     }
 

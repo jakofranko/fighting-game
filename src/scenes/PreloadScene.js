@@ -7,6 +7,7 @@ export default class PreloadScene extends Phaser.Scene {
     }
 
     preload() {
+        document.fonts.load('32px "PressStart2P"');
         for (var i = 0; i < 12; i++) {
             this.load.image(`forest_layer_${i}`, `assets/backgrounds/Forest/PNG/layer${i}.png`);
         }

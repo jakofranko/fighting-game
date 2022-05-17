@@ -40,6 +40,14 @@ function createChar3Anims(anims) {
         }),
         frameRate: 10,
     });
+
+    anims.create({
+        key: `${CHARACTER_3}_hurt`,
+        frames: anims.generateFrameNumbers(CHARACTER_3, {
+            frames: [57]
+        }),
+        frameRate: 10,
+    });
 }
 
 function createChar4Anims(anims) {
@@ -79,6 +87,14 @@ function createChar4Anims(anims) {
         key: `${CHARACTER_4}_low_kick`,
         frames: anims.generateFrameNumbers(CHARACTER_4, {
             frames: [13, 14, 15, 16]
+        }),
+        frameRate: 10,
+    });
+
+    anims.create({
+        key: `${CHARACTER_4}_hurt`,
+        frames: anims.generateFrameNumbers(CHARACTER_4, {
+            frames: [57]
         }),
         frameRate: 10,
     });

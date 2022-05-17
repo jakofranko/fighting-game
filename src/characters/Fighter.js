@@ -11,7 +11,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.textureName = texture;
         this.animationIsPlaying = false;
         this.lastAnimation = null;
-        this.overrideAnimations = [`${this.textureName}_low_kick`];
+        this.overrideAnimations = [`${this.textureName}_low_kick`, `${this.textureName}_hurt`];
         this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
         this.jumpSpeed = config.jumpSpeed;
@@ -46,10 +46,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         // For animations and physics
         this.actionStateMachine = new StateMachine(this);
         this.actionStateMachine
+            .addState('null') // for resetting state
             .addState('idle', {
                 onEnter: () => {
                     this.animationIsPlaying = false;
-                    this.anims.play(`${this.textureName}_idle`);
+                    this.startAnimation(`${this.textureName}_idle`);
                 }
             })
             .addState('moveLeft', {
@@ -95,21 +96,13 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 onEnter: ({ damage }) => {
                     this.health -= damage;
                     EventsCenter.emit('player-health-update', this);
-                    // TODO: add hit animation
+                    this.startAnimation(`${this.textureName}_hurt`)
                     // TODO: add logic and animation for blocking
                 }
             });
     }
 
     update(controls) {
-        const {
-            left,
-            right,
-            up,
-            down,
-            space
-        } = controls;
-
         this.handleHMovement(controls);
         this.handleVMovement(controls);
         this.handleActions(controls);
@@ -123,9 +116,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         const {
             left,
             right,
-            up,
-            down,
-            space
         } = controls;
 
         if (right.isUp && left.isDown) {
@@ -173,14 +163,15 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     unsetAnimation() {
         this.animationIsPlaying = false;
         this.lastAnimation = null;
+        this.actionStateMachine.setState('null');
     }
 
     startAnimation(anim) {
         const isOverrideAnimation = this.overrideAnimations.includes(this.lastAnimation);
-        
+
         if (!isOverrideAnimation &&
-            this.lastAnimation !== anim ||
-            this.animationIsPlaying === false
+            (this.lastAnimation !== anim ||
+            this.animationIsPlaying === false)
         ) {
             this.animationIsPlaying = true;
             this.anims.play(anim, true);
@@ -190,7 +181,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                     this.unsetAnimation();
                     this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
-                })
+                });
             }
         }
     }
@@ -207,7 +198,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this
         );
 
-        function addLowKickHitbox(anim, frame) {
+        function addLowKickHitbox(_, frame) {
             if (frame.index === 3) {
                 if (this.flipX) {
                     this.lowKickHitBox.x = this.x - 20;

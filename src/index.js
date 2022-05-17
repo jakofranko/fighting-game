@@ -1,9 +1,9 @@
-import phaser from 'phaser';
+import Phaser from 'phaser';
 import PreloadScene from './scenes/PreloadScene';
 import ForestScene from './scenes/ForestScene';
 import UIScene from './scenes/UIScene';
 import GameOverScene from './scenes/GameOverScene';
-import { CANVAS_WIDTH, CANVAS_HEIGHT, FLOOR_HEIGHT } from './constants';
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from './constants';
 
 const config = {
 	type: Phaser.AUTO,
@@ -13,7 +13,7 @@ const config = {
 		default: 'arcade',
 		arcade: {
 			gravity: { y: 400 },
-            // debug: true
+            debug: true
 		}
 	},
 	scene: [PreloadScene, ForestScene, UIScene, GameOverScene]

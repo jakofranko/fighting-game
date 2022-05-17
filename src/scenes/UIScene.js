@@ -38,7 +38,7 @@ export default class UIScene extends Phaser.Scene {
 
         // Clean up when scene is switched
         this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-    		eventsCenter.off('player-health-update', this.handlePlayerHealthChange, this);
+    		EventsCenter.off('player-health-update', this.handlePlayerHealthChange, this);
     	});
 
         // Let the rest of the game know that the UI is ready

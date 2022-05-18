@@ -7,7 +7,7 @@ const width = CANVAS_WIDTH / 2.25;
 const height = 40;
 const pad = 20;
 const fontSize = 32;
-let countDownNum = 60;
+let countDownNum = 10;
 
 // TODO: change colors to red, orange, and gold, with the
 // yellow color changing quickest when health changes, and the
@@ -42,7 +42,7 @@ export default class UIScene extends Phaser.Scene {
     	});
 
         // Let the rest of the game know that the UI is ready
-        this.events.on('create', () =>{
+        this.events.on('create', () => {
             EventsCenter.emit('ui-ready');
         });
     }
@@ -106,7 +106,7 @@ export default class UIScene extends Phaser.Scene {
         this.countDown.fillStyle(0x212121);
         this.countDown.fillRect(x, y, width, height);
 
-        const intervalId = setInterval(() => {
+        let intervalId = setInterval(() => {
             this.countDownText.text = --countDownNum;
 
             if (countDownNum === 9) {
@@ -114,9 +114,14 @@ export default class UIScene extends Phaser.Scene {
             }
 
             if (countDownNum === 0) {
-                EventsCenter.emit('game-over', 'foo', 'bar');
+                EventsCenter.emit('game-over', this.player1LastHealth, this.player2LastHealth);
                 clearInterval(intervalId);
+                intervalId = null;
             }
         }, 1000);
+
+        EventsCenter.on('game-over', () => {
+            if (intervalId) clearInterval(intervalId);
+        });
     }
 }

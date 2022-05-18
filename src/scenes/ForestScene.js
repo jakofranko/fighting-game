@@ -71,7 +71,7 @@ export default class ForestScene extends Phaser.Scene {
             EventsCenter.emit('player-health-update', this.player2);
         });
 
-        EventsCenter.once('game-over', () => {
+        EventsCenter.on('game-over', () => {
             this.scene.run('game-over');
         })
     }
@@ -105,13 +105,10 @@ export default class ForestScene extends Phaser.Scene {
 
         if (this.player1.x > this.player2.x) {
             this.player1.flipX = true;
+            this.player2.flipX = false;
         } else {
             this.player1.flipX = false;
-        }
-        if (this.player2.x > this.player1.x) {
             this.player2.flipX = true;
-        } else {
-            this.player2.flipX = false;
         }
     }
 }

@@ -48,6 +48,30 @@ function createChar3Anims(anims) {
         }),
         frameRate: 10,
     });
+
+    anims.create({
+        key: `${CHARACTER_3}_death`,
+        frames: anims.generateFrameNumbers(CHARACTER_3, {
+            frames: [61]
+        }),
+        frameRate: 10,
+    });
+
+    anims.create({
+        key: `${CHARACTER_3}_defeat`,
+        frames: anims.generateFrameNumbers(CHARACTER_3, {
+            frames: [63, 64]
+        }),
+        frameRate: 1,
+    });
+
+    anims.create({
+        key: `${CHARACTER_3}_victory`,
+        frames: anims.generateFrameNumbers(CHARACTER_3, {
+            frames: [86]
+        }),
+        frameRate: 10,
+    });
 }
 
 function createChar4Anims(anims) {
@@ -95,6 +119,30 @@ function createChar4Anims(anims) {
         key: `${CHARACTER_4}_hurt`,
         frames: anims.generateFrameNumbers(CHARACTER_4, {
             frames: [57]
+        }),
+        frameRate: 10,
+    });
+
+    anims.create({
+        key: `${CHARACTER_4}_death`,
+        frames: anims.generateFrameNumbers(CHARACTER_4, {
+            frames: [61]
+        }),
+        frameRate: 10,
+    });
+
+    anims.create({
+        key: `${CHARACTER_4}_defeat`,
+        frames: anims.generateFrameNumbers(CHARACTER_4, {
+            frames: [63, 64]
+        }),
+        frameRate: 1,
+    });
+
+    anims.create({
+        key: `${CHARACTER_4}_victory`,
+        frames: anims.generateFrameNumbers(CHARACTER_4, {
+            frames: [86]
         }),
         frameRate: 10,
     });

@@ -11,7 +11,13 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.textureName = texture;
         this.animationIsPlaying = false;
         this.lastAnimation = null;
-        this.overrideAnimations = [`${this.textureName}_low_kick`, `${this.textureName}_hurt`];
+        this.overrideAnimations = [
+            `${this.textureName}_low_kick`,
+            `${this.textureName}_death`,
+            `${this.textureName}_lost`,
+            `${this.textureName}_victorious`,
+            `${this.textureName}_hurt`
+        ];
         this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
         this.jumpSpeed = config.jumpSpeed;
@@ -49,8 +55,14 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             .addState('null') // for resetting state
             .addState('idle', {
                 onEnter: () => {
-                    this.animationIsPlaying = false;
-                    this.startAnimation(`${this.textureName}_idle`);
+                    // This seems like a hacky fix...not sure how else to keep idle from
+                    // slipping in the state queue though.
+                    if (this.actionStateMachine.lastState === 'dead') {
+                        this.actionStateMachine.setState('dead');
+                    } else {
+                        this.animationIsPlaying = false;
+                        this.startAnimation(`${this.textureName}_idle`);
+                    }
                 }
             })
             .addState('moveLeft', {
@@ -94,18 +106,63 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('damage', {
                 onEnter: ({ damage }) => {
-                    this.health -= damage;
-                    EventsCenter.emit('player-health-update', this);
-                    this.startAnimation(`${this.textureName}_hurt`)
-                    // TODO: add logic and animation for blocking
+                    const { lastState } = this.actionStateMachine;
+
+                    if (lastState === 'dead') {
+                        this.actionStateMachine.setState('dead');
+                    } else {
+                        this.health -= damage;
+                        EventsCenter.emit('player-health-update', this);
+                        if (this.health <= 0) {
+                            this.actionStateMachine.setState('dead');
+                        } else {
+                            this.startAnimation(`${this.textureName}_hurt`)
+                        }
+                        // TODO: add logic and animation for blocking
+                    }
+                }
+            })
+            .addState('dead', {
+                onEnter: () => {
+                    this.startAnimation(`${this.textureName}_death`);
+                    EventsCenter.emit('game-over', this.health, this.enemyPlayer.health);
+                    this.setVelocityX(0);
+                    this.setVelocityY(0);
+                }
+            })
+            .addState('lost', {
+                onEnter: () => {
+                    this.startAnimation(`${this.textureName}_defeat`);
+                    this.setVelocityX(0);
+                    this.setVelocityY(0);
+                }
+            })
+            .addState('victorious', {
+                onEnter: () => {
+                    this.startAnimation(`${this.textureName}_victory`);
+                    this.setVelocityX(0);
+                    this.setVelocityY(0);
                 }
             });
+
+            EventsCenter.once('game-over', () => {
+                if (this.health <= 0) {
+                    return;
+                } else if (this.health > this.enemyPlayer.health) {
+                    this.actionStateMachine.setState('victorious');
+                } else if (this.health < this.enemyPlayer.health) {
+                    this.actionStateMachine.setState('lost');
+                }
+            })
     }
 
     update(controls) {
-        this.handleHMovement(controls);
-        this.handleVMovement(controls);
-        this.handleActions(controls);
+        const { currentState: cs } = this.actionStateMachine;
+        if (!['dead', 'lost', 'victorious'].includes(cs)) {
+            this.handleHMovement(controls);
+            this.handleVMovement(controls);
+            this.handleActions(controls);
+        }
 
         this.hMovementStateMachine.update();
         this.vMovementStateMachine.update();

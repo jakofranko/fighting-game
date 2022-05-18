@@ -6,6 +6,7 @@ export default class StateMachine {
     constructor(gameObject) {
         this.gameObject = gameObject;
         this.states = {};
+        this.lastState = null;
         this.currentState = null;
         this.isSwitchingState = false;
         this.stateQueue = [];
@@ -51,6 +52,8 @@ export default class StateMachine {
             this.states[stateName].onEnter(stateData);
         }
 
+        this.lastState = this.currentState;
+        console.log(`${this.gameObject.name} going from ${this.lastState} to ${stateName}`);
         this.currentState = stateName;
 
         this.isSwitchingState = false;

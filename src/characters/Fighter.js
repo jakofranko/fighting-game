@@ -16,6 +16,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             `${this.textureName}_damage`,
             `${this.textureName}_hurt`
         ];
+        this.finalAnimations = [
+            `${this.textureName}_victory`,
+            `${this.textureName}_defeat`,
+            `${this.textureName}_dead`
+        ]
         this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
         this.jumpSpeed = config.jumpSpeed;
@@ -118,14 +123,14 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('lost', {
                 onEnter: () => {
-                    this.anims.play(`${this.textureName}_defeat`, true);
+                    this.startAnimation(`${this.textureName}_defeat`);
                     this.setVelocityX(0);
                     this.setVelocityY(0);
                 }
             })
             .addState('victorious', {
                 onEnter: () => {
-                    this.anims.play(`${this.textureName}_victory`, true);
+                    this.startAnimation(`${this.textureName}_victory`);
                     this.setVelocityX(0);
                     this.setVelocityY(0);
                 }
@@ -135,10 +140,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 if (this.health <= 0) {
                     return;
                 } else if (this.health > this.enemyPlayer.health) {
-                    debugger;
                     this.actionStateMachine.setState('victorious', { freeze: true, unfreeze: true });
                 } else if (this.health < this.enemyPlayer.health) {
-                    debugger;
                     this.actionStateMachine.setState('lost', { freeze: true, unfreeze: true });
                 }
             })
@@ -146,7 +149,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
     update(controls) {
         const { currentState: cs } = this.actionStateMachine;
-        if (![`${this.textureName}_victory`, `${this.textureName}_defeat`].includes(cs)) {
+        if (!['victorious', 'lost', 'dead'].includes(cs)) {
             this.handleHMovement(controls);
             this.handleVMovement(controls);
             this.handleActions(controls);
@@ -205,16 +208,25 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
-    unsetAnimation() {
+    unsetAnimation(nullState = true) {
         this.animationIsPlaying = false;
         this.lastAnimation = null;
-        if (![`${this.textureName}_dead`, `${this.textureName}_defeat`, `${this.textureName}_victory`].includes(this.lastAnimation)) {
+
+        if (nullState) {
             this.actionStateMachine.setState('null', { unfreeze: true });
         }
     }
 
     startAnimation(anim) {
         const isOverrideAnimation = this.overrideAnimations.includes(this.lastAnimation);
+        const isFinalAnimation = this.finalAnimations.includes(anim);
+
+        if (isFinalAnimation) {
+            this.unsetAnimation(false);
+            this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
+            this.anims.play(anim, true);
+            return;
+        }
 
         if (!isOverrideAnimation &&
             (this.lastAnimation !== anim ||
@@ -225,7 +237,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.lastAnimation = anim;
 
             if (this.overrideAnimations.includes(anim)) {
-                console.log(anim);
                 this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                     this.unsetAnimation();
                     this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);

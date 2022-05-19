@@ -21,9 +21,14 @@ module.exports = {
     },
     plugins: [
         new CopyPlugin({
-            patterns: [{
+            patterns: [
+                {
                     from: './public/assets',
                     to: 'assets'
+                },
+                {
+                    from: './public/index.html',
+                    to: 'index.html'
                 }
             ]
         })

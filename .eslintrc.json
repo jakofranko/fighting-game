@@ -10,5 +10,10 @@
     },
     "rules": {
         "no-console": "warn"
+    },
+    "globals": {
+        "__dirname": true,
+        "require": true,
+        "module": true
     }
 }

@@ -13,9 +13,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.lastAnimation = null;
         this.overrideAnimations = [
             `${this.textureName}_low_kick`,
-            `${this.textureName}_death`,
-            `${this.textureName}_lost`,
-            `${this.textureName}_victorious`,
+            `${this.textureName}_damage`,
             `${this.textureName}_hurt`
         ];
         this.health = config.health || 100;
@@ -55,14 +53,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             .addState('null') // for resetting state
             .addState('idle', {
                 onEnter: () => {
-                    // This seems like a hacky fix...not sure how else to keep idle from
-                    // slipping in the state queue though.
-                    if (this.actionStateMachine.lastState === 'dead') {
-                        this.actionStateMachine.setState('dead');
-                    } else {
-                        this.animationIsPlaying = false;
-                        this.startAnimation(`${this.textureName}_idle`);
-                    }
+                    this.animationIsPlaying = false;
+                    this.startAnimation(`${this.textureName}_idle`);
                 }
             })
             .addState('moveLeft', {
@@ -106,20 +98,14 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('damage', {
                 onEnter: ({ damage }) => {
-                    const { lastState } = this.actionStateMachine;
-
-                    if (lastState === 'dead') {
-                        this.actionStateMachine.setState('dead');
+                    this.health -= damage;
+                    EventsCenter.emit('player-health-update', this);
+                    if (this.health <= 0) {
+                        this.actionStateMachine.setState('dead', { freeze: true, unfreeze: true });
                     } else {
-                        this.health -= damage;
-                        EventsCenter.emit('player-health-update', this);
-                        if (this.health <= 0) {
-                            this.actionStateMachine.setState('dead');
-                        } else {
-                            this.startAnimation(`${this.textureName}_hurt`)
-                        }
-                        // TODO: add logic and animation for blocking
+                        this.startAnimation(`${this.textureName}_hurt`)
                     }
+                    // TODO: add logic and animation for blocking
                 }
             })
             .addState('dead', {
@@ -132,14 +118,14 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('lost', {
                 onEnter: () => {
-                    this.startAnimation(`${this.textureName}_defeat`);
+                    this.anims.play(`${this.textureName}_defeat`, true);
                     this.setVelocityX(0);
                     this.setVelocityY(0);
                 }
             })
             .addState('victorious', {
                 onEnter: () => {
-                    this.startAnimation(`${this.textureName}_victory`);
+                    this.anims.play(`${this.textureName}_victory`, true);
                     this.setVelocityX(0);
                     this.setVelocityY(0);
                 }
@@ -149,16 +135,18 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 if (this.health <= 0) {
                     return;
                 } else if (this.health > this.enemyPlayer.health) {
-                    this.actionStateMachine.setState('victorious');
+                    debugger;
+                    this.actionStateMachine.setState('victorious', { freeze: true, unfreeze: true });
                 } else if (this.health < this.enemyPlayer.health) {
-                    this.actionStateMachine.setState('lost');
+                    debugger;
+                    this.actionStateMachine.setState('lost', { freeze: true, unfreeze: true });
                 }
             })
     }
 
     update(controls) {
         const { currentState: cs } = this.actionStateMachine;
-        if (!['dead', 'lost', 'victorious'].includes(cs)) {
+        if (![`${this.textureName}_victory`, `${this.textureName}_defeat`].includes(cs)) {
             this.handleHMovement(controls);
             this.handleVMovement(controls);
             this.handleActions(controls);
@@ -220,7 +208,9 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     unsetAnimation() {
         this.animationIsPlaying = false;
         this.lastAnimation = null;
-        this.actionStateMachine.setState('null');
+        if (![`${this.textureName}_dead`, `${this.textureName}_defeat`, `${this.textureName}_victory`].includes(this.lastAnimation)) {
+            this.actionStateMachine.setState('null', { unfreeze: true });
+        }
     }
 
     startAnimation(anim) {
@@ -235,6 +225,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.lastAnimation = anim;
 
             if (this.overrideAnimations.includes(anim)) {
+                console.log(anim);
                 this.on(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
                     this.unsetAnimation();
                     this.off(Phaser.Animations.Events.ANIMATION_COMPLETE);
@@ -244,7 +235,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     onLowKickEnter() {
-        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0.4);
+        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0);
         this.scene.physics.add.existing(this.lowKickHitBox);
         this.lowKickHitBox.body.allowGravity = false;
         this.scene.physics.add.overlap(
@@ -301,7 +292,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleLowKickHit(lowKickHitBox, enemyPlayer) {
-        enemyPlayer.actionStateMachine.setState('damage', { damage: 10 });
+        enemyPlayer.actionStateMachine.setState('damage', { damage: 10, freeze: true });
         lowKickHitBox.destroy();
     }
 }

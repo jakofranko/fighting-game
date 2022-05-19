@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import EventsCenter from '../services/events-center';
-import Char3 from '../characters/Char3';
-import Char4 from '../characters/Char4';
+import Char3 from '../characters/Char3'; // eslint-disable-line no-unused-vars
+import Char4 from '../characters/Char4'; // eslint-disable-line no-unused-vars
 import createCharacterAnims from '../anims/characterAnims';
 import {
     CANVAS_HEIGHT,
@@ -32,12 +32,12 @@ export default class ForestScene extends Phaser.Scene {
 
         this.createBackground();
         this.ground = this.createGround();
-        this.player1 = this.add[CHARACTER_3](100, 150, CHARACTER_3, {
+        this.player1 = this.add[CHARACTER_3](400, 150, CHARACTER_3, {
             name: 'player1',
             moveSpeed: CHARACTER_3_MOVE_SPEED,
             jumpSpeed: CHARACTER_3_JUMP_SPEED
         });
-        this.player2 = this.add[CHARACTER_4](500, 150, CHARACTER_4, {
+        this.player2 = this.add[CHARACTER_4](600, 150, CHARACTER_4, {
             name: 'player2',
             moveSpeed: CHARACTER_4_MOVE_SPEED,
             jumpSpeed: CHARACTER_4_JUMP_SPEED

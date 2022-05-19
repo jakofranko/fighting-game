@@ -57,7 +57,6 @@ export default class StateMachine {
         }
 
         this.lastState = this.currentState;
-        console.log(`${this.gameObject.name} going from ${this.lastState} to ${stateName}`);
         this.currentState = stateName;
 
         this.isSwitchingState = false;

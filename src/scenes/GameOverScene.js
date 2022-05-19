@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '../constants';
-import { capitalizeFirstLetter } from '../utils';
 import EventsCenter from '../services/events-center';
 
 const fontSize = 32;

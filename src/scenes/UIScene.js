@@ -7,7 +7,7 @@ const width = CANVAS_WIDTH / 2.25;
 const height = 40;
 const pad = 20;
 const fontSize = 32;
-let countDownNum = 10;
+let countDownNum = 60;
 
 // TODO: change colors to red, orange, and gold, with the
 // yellow color changing quickest when health changes, and the

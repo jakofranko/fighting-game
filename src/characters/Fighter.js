@@ -19,7 +19,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.finalAnimations = [
             `${this.textureName}_victory`,
             `${this.textureName}_defeat`,
-            `${this.textureName}_dead`
+            `${this.textureName}_death`
         ]
         this.health = config.health || 100;
         this.moveSpeed = config.moveSpeed;
@@ -125,6 +125,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                     } else {
                         console.error('name not assigned correctly!!! Should be player1 or player2');
                     }
+
                     this.startAnimation(`${this.textureName}_death`);
                     EventsCenter.emit('game-over', player1Health, player2Health);
                     this.setVelocityX(0);
@@ -313,7 +314,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     handleLowKickHit(lowKickHitBox, enemyPlayer) {
-        enemyPlayer.actionStateMachine.setState('damage', { damage: 10, freeze: true });
+        enemyPlayer.actionStateMachine.setState('damage', { damage: 10 });
         lowKickHitBox.destroy();
     }
 }

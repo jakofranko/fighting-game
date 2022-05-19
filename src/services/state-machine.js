@@ -9,6 +9,7 @@ export default class StateMachine {
         this.lastState = null;
         this.currentState = null;
         this.isSwitchingState = false;
+        this.isFrozen = false;
         this.stateQueue = [];
     }
 
@@ -27,18 +28,17 @@ export default class StateMachine {
     }
 
     setState(stateName, stateData) {
-
-        if (!this.states[stateName]) {
-            return;
-        }
-
-        if(stateName === this.currentState) {
-            return;
-        }
-
         // Avoid race conditions when switching states rapidly
         if (this.isSwitchingState) {
-            this.stateQueue.push(stateName);
+            this.stateQueue.push([stateName, stateData]);
+            return;
+        }
+
+        if (stateData?.unfreeze) {
+            this.isFrozen = false;
+        }
+
+        if (!this.states[stateName] || stateName === this.currentState || this.isFrozen) {
             return;
         }
 
@@ -52,6 +52,10 @@ export default class StateMachine {
             this.states[stateName].onEnter(stateData);
         }
 
+        if (stateData?.freeze) {
+            this.isFrozen = true;
+        }
+
         this.lastState = this.currentState;
         console.log(`${this.gameObject.name} going from ${this.lastState} to ${stateName}`);
         this.currentState = stateName;
@@ -62,8 +66,8 @@ export default class StateMachine {
     update(delta) {
         // Process stateQueue first before doing updates
         if (this.stateQueue.length) {
-            const newState = this.stateQueue.shift();
-            this.setState(newState);
+            const [newState, newStateData] = this.stateQueue.shift();
+            this.setState(newState, newStateData);
             return;
         }
 

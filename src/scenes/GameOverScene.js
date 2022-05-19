@@ -19,8 +19,8 @@ export default class GameOverScene extends Phaser.Scene {
     create() {
         // Clean up when scene is switched
         this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-    		EventsCenter.off('game-over', this.handleGameOver, this);
-    	});
+            EventsCenter.off('game-over', this.handleGameOver, this);
+       });
     }
 
     handleGameOver(player1Health, player2Health) {

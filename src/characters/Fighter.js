@@ -123,6 +123,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                         player2Health = this.health;
                         player1Health = this.enemyPlayer.health;
                     } else {
+                        /* eslint-disable no-console */
                         console.error('name not assigned correctly!!! Should be player1 or player2');
                     }
 

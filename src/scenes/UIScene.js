@@ -38,8 +38,8 @@ export default class UIScene extends Phaser.Scene {
 
         // Clean up when scene is switched
         this.events.on(Phaser.Scenes.Events.SHUTDOWN, () => {
-    		EventsCenter.off('player-health-update', this.handlePlayerHealthChange, this);
-    	});
+            EventsCenter.off('player-health-update', this.handlePlayerHealthChange, this);
+        });
 
         // Let the rest of the game know that the UI is ready
         this.events.on('create', () => {
@@ -93,6 +93,7 @@ export default class UIScene extends Phaser.Scene {
 
             this[`${player.name}LastHealth`] = player.health;
         } else {
+            /* eslint-disable no-console */
             console.error(`Please designate which player ${player.name} is by setting the name to either player1 or player2`);
         }
     }

@@ -115,8 +115,18 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('dead', {
                 onEnter: () => {
+                    let player1Health, player2Health;
+                    if (this.name === 'player1') {
+                        player1Health = this.health;
+                        player2Health = this.enemyPlayer.health;
+                    } else if (this.name === 'player2') {
+                        player2Health = this.health;
+                        player1Health = this.enemyPlayer.health;
+                    } else {
+                        console.error('name not assigned correctly!!! Should be player1 or player2');
+                    }
                     this.startAnimation(`${this.textureName}_death`);
-                    EventsCenter.emit('game-over', this.health, this.enemyPlayer.health);
+                    EventsCenter.emit('game-over', player1Health, player2Health);
                     this.setVelocityX(0);
                     this.setVelocityY(0);
                 }

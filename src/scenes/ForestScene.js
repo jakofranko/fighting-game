@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import * as dat from 'dat.gui';
 import EventsCenter from '../services/events-center';
 import Char3 from '../characters/Char3'; // eslint-disable-line no-unused-vars
 import Char4 from '../characters/Char4'; // eslint-disable-line no-unused-vars
@@ -8,7 +7,6 @@ import {
     CANVAS_HEIGHT,
     BACKGROUND_X_OFFSET,
     BACKGROUND_Y_OFFSET,
-    BACKGROUND_SCALE,
     CHARACTER_3,
     CHARACTER_3_MOVE_SPEED,
     CHARACTER_3_JUMP_SPEED,
@@ -16,8 +14,6 @@ import {
     CHARACTER_4_MOVE_SPEED,
     CHARACTER_4_JUMP_SPEED,
 } from '../constants';
-
-const camGui = new dat.GUI({ name: 'Camera Controls' });
 
 export default class ForestScene extends Phaser.Scene {
     constructor() {
@@ -89,16 +85,13 @@ export default class ForestScene extends Phaser.Scene {
 
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
+        // This removes the sprite 'jitter' that occurs when the camera moves.
+        this.physics.world.fixedStep = false;
+
         let camZoom = 1.5;
         this.cameras.main.setZoom(camZoom);
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
         this.cameras.main.startFollow(this.centerObject, true, 0.1, 0.1);
-
-        camGui.add(this.cameras.main, 'zoom');
-        camGui.add(this.cameras.main, 'scrollX');
-        camGui.add(this.cameras.main, 'scrollY');
-        camGui.add(this.cameras.main, 'width');
-        camGui.add(this.cameras.main, 'height');
     }
 
     createBackground() {

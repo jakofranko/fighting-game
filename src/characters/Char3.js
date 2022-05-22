@@ -16,9 +16,9 @@ Phaser.GameObjects.GameObjectFactory.register(CHARACTER_3, function(x, y, textur
 
     this.scene.physics.world.enableBody(char3, Phaser.Physics.Arcade.DYNAMIC_BODY);
 
-    char3.setBounce(0.1);
+    char3.setBounce(0);
     char3.setCollideWorldBounds(true);
-    char3.setScale(1.5);
+    char3.setScale(1.2);
     char3.setSize(23, 46, true)
 
     return char3;

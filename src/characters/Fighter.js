@@ -98,8 +98,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 }
             })
             .addState('lowKick', {
-                onEnter: this.onLowKickEnter,
-                onExit: this.onLowKickExit
+                onEnter: this.onLowKickEnter
             })
             .addState('damage', {
                 onEnter: ({ damage }) => {
@@ -206,7 +205,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
 
         // Handle attacks first
         if (space.isDown) {
-            this.actionStateMachine.setState('lowKick');
+            this.actionStateMachine.setState('lowKick', { freeze: true });
         } else if (up.isDown) {
             this.actionStateMachine.setState('jump');
         } else if (right.isUp && left.isDown) {
@@ -258,7 +257,9 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     }
 
     onLowKickEnter() {
-        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0);
+        if (this.lowKickHitBox) this.lowKickHitBox.destroy();
+
+        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0.5);
         this.scene.physics.add.existing(this.lowKickHitBox);
         this.lowKickHitBox.body.allowGravity = false;
         this.scene.physics.add.overlap(
@@ -285,7 +286,26 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
+        function cleanupLowKick() {
+            this.body.offset.x = 20;
+
+            if (this.flipX) {
+                this.setPosition(this.x + 15, this.y);
+                if (this.lowKickHitBox) {
+                    this.lowKickHitBox.destroy();
+                }
+            } else {
+                this.setPosition(this.x - 15, this.y);
+                if (this.lowKickHitBox) {
+                    this.lowKickHitBox.destroy();
+                }
+            }
+
+            this.off(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, cleanupLowKick);
+        }
+
         this.on(Phaser.Animations.Events.ANIMATION_UPDATE, addLowKickHitbox);
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, cleanupLowKick)
 
         if (this.flipX) {
             this.body.offset.x = 30;
@@ -296,22 +316,6 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.startAnimation(`${this.textureName}_low_kick`);
-    }
-
-    onLowKickExit() {
-        if (this.flipX) {
-            this.body.offset.x = 20;
-            this.setPosition(this.x + 15, this.y);
-            if (this.lowKickHitBox) {
-                this.lowKickHitBox.destroy();
-            }
-        } else {
-            this.body.offset.x = 20;
-            this.setPosition(this.x - 15, this.y);
-            if (this.lowKickHitBox) {
-                this.lowKickHitBox.destroy();
-            }
-        }
     }
 
     handleLowKickHit(lowKickHitBox, enemyPlayer) {

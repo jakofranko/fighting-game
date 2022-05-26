@@ -28,17 +28,17 @@ export default class StateMachine {
     }
 
     setState(stateName, stateData) {
-        // Avoid race conditions when switching states rapidly
-        if (this.isSwitchingState) {
-            this.stateQueue.push([stateName, stateData]);
-            return;
-        }
-
         if (stateData?.unfreeze) {
             this.isFrozen = false;
         }
 
         if (!this.states[stateName] || stateName === this.currentState || this.isFrozen) {
+            return;
+        }
+
+        // Avoid race conditions when switching states rapidly
+        if (this.isSwitchingState) {
+            this.stateQueue.push([stateName, stateData]);
             return;
         }
 

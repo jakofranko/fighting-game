@@ -3,7 +3,7 @@
 // functions which will handle lifecycle methods for switching
 // between states.
 export default class StateMachine {
-    constructor(gameObject) {
+    constructor(gameObject, label = 'StateMachine', debug = false) {
         this.gameObject = gameObject;
         this.states = {};
         this.lastState = null;
@@ -11,6 +11,7 @@ export default class StateMachine {
         this.isSwitchingState = false;
         this.isFrozen = false;
         this.stateQueue = [];
+        this.log = debug ? console.log.bind(this, `%c${label} State Machine`, 'color: aliceblue; background-color: darkslategrey; padding: 5px') : () => {} // eslint-disable-line no-console
     }
 
     addState(stateName, config = {}) {
@@ -29,20 +30,30 @@ export default class StateMachine {
 
     setState(stateName, stateData) {
         if (stateData?.unfreeze) {
+            this.log(`Unfreezing from state ${stateName}`);
             this.isFrozen = false;
         }
 
         if (!this.states[stateName] || stateName === this.currentState || this.isFrozen) {
+            this.log(
+                'Not setting state:',
+                `State exists: ${this.states[stateName] !== undefined}`,
+                `Setting to current state: ${stateName === this.currentState}`,
+                `Frozen: ${this.isFrozen}`
+            );
             return;
         }
 
         // Avoid race conditions when switching states rapidly
         if (this.isSwitchingState) {
+            this.log(`Currently switching state, queueing state ${stateName}`);
             this.stateQueue.push([stateName, stateData]);
             return;
         }
 
         this.isSwitchingState = true;
+
+        this.log(`Switching state from ${this.currentState} to ${stateName}`);
 
         if (this.currentState && this.states[this.currentState].onExit) {
             this.states[this.currentState].onExit(stateData);

@@ -27,7 +27,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.enemyPlayer = undefined; // Will be set in Scene
         this.isFlipped = false;
 
-        this.hMovementStateMachine = new StateMachine(this);
+        this.hMovementStateMachine = new StateMachine(this, 'hMovement');
         this.hMovementStateMachine
             .addState('idle', {
                 onEnter: () => {
@@ -44,7 +44,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                     this.setVelocityX(this.moveSpeed)
                 }
             });
-        this.vMovementStateMachine = new StateMachine(this);
+        this.vMovementStateMachine = new StateMachine(this, 'vMovement');
         this.vMovementStateMachine
             .addState('jump', {
                 onEnter: () => {
@@ -53,7 +53,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('idle');
         // For animations and physics
-        this.actionStateMachine = new StateMachine(this);
+        this.actionStateMachine = new StateMachine(this, 'action');
         this.actionStateMachine
             .addState('null') // for resetting state
             .addState('idle', {
@@ -147,6 +147,11 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 }
             });
 
+            this.combatStateMachine = new StateMachine(this, 'combat');
+            this.combatStateMachine
+                .addState('idle')
+                .addState('blocking');
+
             EventsCenter.once('game-over', () => {
                 if (this.health <= 0) {
                     return;
@@ -164,6 +169,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.handleHMovement(controls);
             this.handleVMovement(controls);
             this.handleActions(controls);
+            this.handleCombat(controls);
         }
 
         this.hMovementStateMachine.update();
@@ -216,6 +222,24 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.actionStateMachine.setState('idle');
         } else if (left.isUp && right.isUp && up.isUp) {
             this.actionStateMachine.setState('idle');
+        }
+    }
+
+    handleCombat(controls) {
+        const { left, right } = controls;
+
+        if (this.flipX) {
+            if (right.isDown) {
+                this.combatStateMachine.setState('blocking');
+            } else {
+                this.combatStateMachine.setState('idle');
+            }
+        } else {
+            if (left.isDown) {
+                this.combatStateMachine.setState('blocking');
+            } else {
+                this.combatStateMachine.setState('idle');
+            }
         }
     }
 

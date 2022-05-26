@@ -102,7 +102,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             })
             .addState('damage', {
                 onEnter: ({ damage }) => {
-                    this.health -= damage;
+                    const blocking = this.combatStateMachine.currentState === 'blocking';
+                    this.health -= blocking ? damage / 10 : damage;
                     EventsCenter.emit('player-health-update', this);
                     if (this.health <= 0) {
                         this.actionStateMachine.setState('dead', { freeze: true, unfreeze: true });

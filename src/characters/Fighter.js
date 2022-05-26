@@ -284,7 +284,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
     onLowKickEnter() {
         if (this.lowKickHitBox) this.lowKickHitBox.destroy();
 
-        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0.5);
+        this.lowKickHitBox = this.scene.add.rectangle(0, 0, 20, 20, 0xffffff, 0);
         this.scene.physics.add.existing(this.lowKickHitBox);
         this.lowKickHitBox.body.allowGravity = false;
         this.scene.physics.add.overlap(

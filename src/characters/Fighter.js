@@ -14,7 +14,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.overrideAnimations = [
             `${this.textureName}_low_kick`,
             `${this.textureName}_damage`,
-            `${this.textureName}_hurt`
+            `${this.textureName}_hurt`,
+            `${this.textureName}_block`
         ];
         this.finalAnimations = [
             `${this.textureName}_victory`,
@@ -107,6 +108,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                     EventsCenter.emit('player-health-update', this);
                     if (this.health <= 0) {
                         this.actionStateMachine.setState('dead', { freeze: true, unfreeze: true });
+                    } else if (blocking) {
+                        this.startAnimation(`${this.textureName}_block`)
                     } else {
                         this.startAnimation(`${this.textureName}_hurt`)
                     }

@@ -36,7 +36,7 @@ export default class StateMachine {
 
         if (!this.states[stateName] || stateName === this.currentState || this.isFrozen) {
             this.log(
-                'Not setting state:',
+                `Not setting state ${stateName}:`,
                 `State exists: ${this.states[stateName] !== undefined}`,
                 `Setting to current state: ${stateName === this.currentState}`,
                 `Frozen: ${this.isFrozen}`

@@ -12,6 +12,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.animationIsPlaying = false;
         this.lastAnimation = null;
         this.overrideAnimations = [
+            `${this.textureName}_fast_punch`,
+            `${this.textureName}_high_kick`,
             `${this.textureName}_low_kick`,
             `${this.textureName}_damage`,
             `${this.textureName}_hurt`,

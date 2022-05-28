@@ -27,6 +27,7 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
         this.jumpSpeed = config.jumpSpeed;
         this.enemyPlayer = undefined; // Will be set in Scene
         this.isFlipped = false;
+        this.lowKickCleaned = true;
 
         this.hMovementStateMachine = new StateMachine(this, 'hMovement');
         this.hMovementStateMachine
@@ -99,7 +100,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
                 }
             })
             .addState('lowKick', {
-                onEnter: this.onLowKickEnter
+                onEnter: this.onLowKickEnter,
+                onExit: this.onLowKickExit
             })
             .addState('damage', {
                 onEnter: ({ damage }) => {
@@ -314,26 +316,8 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             }
         }
 
-        function cleanupLowKick() {
-            this.body.offset.x = 20;
-
-            if (this.flipX) {
-                this.setPosition(this.x + 15, this.y);
-                if (this.lowKickHitBox) {
-                    this.lowKickHitBox.destroy();
-                }
-            } else {
-                this.setPosition(this.x - 15, this.y);
-                if (this.lowKickHitBox) {
-                    this.lowKickHitBox.destroy();
-                }
-            }
-
-            this.off(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, cleanupLowKick);
-        }
-
         this.on(Phaser.Animations.Events.ANIMATION_UPDATE, addLowKickHitbox);
-        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, cleanupLowKick)
+        this.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, this.cleanupLowKick)
 
         if (this.flipX) {
             this.body.offset.x = 30;
@@ -343,11 +327,39 @@ export default class Fighter extends Phaser.Physics.Arcade.Sprite {
             this.setPosition(this.x + 15, this.y);
         }
 
+        this.lowKickCleaned = false;
+
         this.startAnimation(`${this.textureName}_low_kick`);
     }
 
+    cleanupLowKick() {
+        this.body.offset.x = 20;
+
+        if (this.flipX) {
+            this.setPosition(this.x + 15, this.y);
+            if (this.lowKickHitBox) {
+                this.lowKickHitBox.destroy();
+            }
+        } else {
+            this.setPosition(this.x - 15, this.y);
+            if (this.lowKickHitBox) {
+                this.lowKickHitBox.destroy();
+            }
+        }
+
+        this.lowKickCleaned = true;
+
+        this.off(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY + `${this.textureName}_low_kick`, this.cleanupLowKick);
+    }
+
     handleLowKickHit(lowKickHitBox, enemyPlayer) {
-        enemyPlayer.actionStateMachine.setState('damage', { damage: 10 });
+        enemyPlayer.actionStateMachine.setState('damage', { damage: 10, unfreeze: true });
         lowKickHitBox.destroy();
+    }
+
+    onLowKickExit() {
+        if (!this.lowKickCleaned) {
+            this.cleanupLowKick();
+        }
     }
 }
